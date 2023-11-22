@@ -1,8 +1,11 @@
+import aritmetics
 import json
 import matplotlib.pyplot as plt
 import numpy as np
 import openpyxl
 import requests
+from tabulate import tabulate
+import top_worst_products as twp
 
 def hacer_solicitud_api():
     try:
@@ -14,12 +17,11 @@ def hacer_solicitud_api():
         return []
 
 def listar_productos_maquillaje(data):
-    for product in data:
-        print(f"Producto: {product['name']}")
-        print(f"Marca: {product['brand']}")
-        print(f"Categoría: {product['category']}")
-        print(f"Precio: {product['price']}")
-        print("-------------------------")
+    if data:
+        headers = ["id", "brand", "name", "price"]
+        filas = [[producto["id"], producto["brand"], producto["name"], producto["price"]]
+                 for producto in data]
+        print(tabulate(filas, headers=headers, tablefmt="grid"))
 
 def obtener_precios_maquillaje(data):
     precios = [float(product["price"]) for product in data if product.get("price") is not None and product.get("price") != ""]
@@ -34,10 +36,6 @@ def graficar_precios_maquillaje(precios):
         plt.show()
     else:
         print("No hay datos válidos de precios para graficar.")
-
-def obtener_precios_maquillaje_ordenados(data):
-    sorted_data = sorted(data, key=lambda product: product.get('price', 0))
-    return sorted_data
 
 def filtrar_productos_por_marca(data, marca):
     if marca is not None and marca != "":
@@ -158,7 +156,7 @@ def menu_consulta_por_categoria(data):
     else:
         print(f"No hay productos en la categoría '{categoria}'.")
 
-def graficar_tendencia (precios):
+def graficar_tendencia(precios):
   if precios:
     x = np.arange(1, len (precios) + 1)
     y = np.array(precios)
@@ -194,6 +192,7 @@ def mostrar_menu_principal(data):
         print("1 - Obtener datos")
         print("2 - Gráficas")
         print("3 - Exportar")
+        print("4 - Estadísticas")
         print("0 - Salir")
         opcion = input("Ingrese su opción: ")
 
@@ -203,9 +202,8 @@ def mostrar_menu_principal(data):
                 print("Menú de obtener datos")
                 print("1 - Listar TODOS los productos de maquillaje")
                 print("2 - Obtener precios de productos de maquillaje")
-                print("3 - Obtener precios de productos de maquillaje ordenados")
-                print("4 - Consultar productos por marca")
-                print("5 - Consultar productos por categoría")
+                print("3 - Consultar productos por marca")
+                print("4 - Consultar productos por categoría")
                 print("0 - Salir del menú de obtener datos")
                 opcionI = input("Ingrese su opción: ")
 
@@ -219,20 +217,13 @@ def mostrar_menu_principal(data):
                         print(precio)
 
                 elif opcionI == "3":
-                    productos_ordenados = obtener_precios_maquillaje_ordenados(data)
-                    print("Precios de productos en orden de maquillaje:")
-                    for product in productos_ordenados:
-                        if type(product['price']) == float or type(product('price')) == int:
-                            print(f"Producto: {product['name']}, Precio: {product['price']}")
-
-                elif opcionI == "4":
                     marca = input("Ingrese la marca para filtrar los productos: ")
                     productos_filtrados = filtrar_productos_por_marca(data, marca)
                     print("Productos filtrados por marca:")
                     for product in productos_filtrados:
                         print(f"Producto: {product['name']}, Marca: {product['brand']}")
 
-                elif opcionI == "5":
+                elif opcionI == "4":
                     menu_consulta_por_categoria(data)
 
                 elif opcionI == "0":
@@ -262,7 +253,7 @@ def mostrar_menu_principal(data):
                         print("Primero obtén precios antes de intentar graficar.")
                 
                 elif opcionII == "2":
-                  graficar_tendencia (precios)
+                  graficar_tendencia(precios)
                 
                 elif opcionII == "3":
                     filename_excel_grafico = input("Ingrese el nombre del archivo Excel para graficar (sin extensión): ") + ".xlsx"
@@ -303,6 +294,55 @@ def mostrar_menu_principal(data):
 
                 elif opcionIII == "0":
                     print("Saliendo del menú de exportar...")
+
+                else:
+                    print("Opción inválida. Por favor, intente nuevamente.")
+
+        elif opcion == "4":
+            opcionIV = None
+            while opcionIV != "0":
+                print("Menú de estadísticas")
+                print("1 - Calcular precio promedio")
+                print("2 - Calcular precio más alto")
+                print("3 - Calcular precio más bajo")
+                print("4 - Obtener el producto con mejor rating")
+                print("5 - Obtener el producto con el peor rating")
+                print("0 - Salir del menú de estadísticas")
+                opcionIV = input("Ingrese su opción: ")
+
+                if opcionIV == "1":
+                    prom = aritmetics.calcular_precio_promedio(datos_maquillaje)
+                    print("Precio promedio de los productos:", prom)
+                    print("-------------------------")
+
+                elif opcionIV == "2":
+                    name_higher, price_higher = aritmetics.obtener_producto_mas_caro(datos_maquillaje)
+                    print("Producto más caro:")
+                    print("Nombre:", name_higher)
+                    print("Precio:", price_higher)
+                    print("-------------------------")
+
+                elif opcionIV == "3":
+                    name_lower, price_lower = aritmetics.obtener_producto_mas_barato(datos_maquillaje)
+                    print("Producto más caro:")
+                    print("Nombre:", name_lower)
+                    print("Precio:", price_lower)
+                    print("-------------------------")
+                
+                elif opcionIV == "4":
+                    best_n, best_r, best_p = twp.best(datos_maquillaje)
+                    print("El producto con mejor rating es:", best_n)
+                    print("Rating:", best_r)
+                    print("Precio:", best_p)
+                
+                elif opcionIV == "5":
+                    worst_n, worst_r, worst_p = twp.worst(datos_maquillaje)
+                    print("El producto con peor rating es:", worst_n)
+                    print("Rating:", worst_r)
+                    print("Precio:", worst_p)
+
+                elif opcionIV == "0":
+                    print("Saliendo del menú de estadísticas...")
 
                 else:
                     print("Opción inválida. Por favor, intente nuevamente.")
