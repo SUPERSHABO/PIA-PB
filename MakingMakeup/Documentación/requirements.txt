@@ -1,0 +1,6 @@
+aritmetics==0.1.0
+matplotlib==3.4.3
+numpy==1.21.2
+openpyxl==3.0.15
+requests==2.26.0
+tabulate==0.8.10
