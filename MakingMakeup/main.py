@@ -10,7 +10,7 @@ import top_worst_products as twp
 def hacer_solicitud_api():
     try:
         response = requests.get("http://makeup-api.herokuapp.com/api/v1/products.json")
-        response.raise_for_status()  # Manejar posibles errores HTTP
+        response.raise_for_status()
         return json.loads(response.text)
     except requests.RequestException as e:
         print(f"Error en la solicitud API: {e}")
@@ -57,20 +57,16 @@ def guardar_en_txt(datos, nombre_archivo_txt, marca_filtrada=None):
 def guardar_en_excel(datos, nombre_archivo_excel):
     libro_excel = openpyxl.Workbook()
     hoja_excel = libro_excel.active
-
-    # Escribir encabezados en la primera fila
     encabezados = ["Producto", "Marca", "Categoría", "Precio"]
     for columna, encabezado in enumerate(encabezados, start=1):
         hoja_excel.cell(row=1, column=columna, value=encabezado)
 
-    # Escribir datos en las filas siguientes
     for fila, product in enumerate(datos, start=2):
         hoja_excel.cell(row=fila, column=1, value=product.get('name', ''))
         hoja_excel.cell(row=fila, column=2, value=product.get('brand', ''))
         hoja_excel.cell(row=fila, column=3, value=product.get('category', ''))
         hoja_excel.cell(row=fila, column=4, value=product.get('price', ''))
 
-    # Guardar el archivo Excel
     libro_excel.save(nombre_archivo_excel)
 
 def graficar_datos_excel(nombre_archivo_excel):
@@ -117,7 +113,7 @@ def graficar_datos_txt(nombre_archivo_txt):
           for linea in archivo_txt:
               if "Precio:" in linea:
                   precio_str = linea.split(":")[1].strip()
-                  if precio_str.lower() != 'none':  # Verificar si el valor no es 'None'
+                  if precio_str.lower() != 'none':
                       precio = float(precio_str)
                       precios.append(precio)
 
@@ -132,7 +128,6 @@ def graficar_datos_txt(nombre_archivo_txt):
   except Exception as e:
       print(f"Error al cargar el archivo TXT: {e}")
 
-
 def menu_consulta_por_categoria(data):
     categoria = input("Ingrese la categoría de productos que desea consultar: ")
     productos_categoria = consultar_productos_por_categoria(data, categoria)
@@ -142,14 +137,12 @@ def menu_consulta_por_categoria(data):
         for product in productos_categoria:
             print(f"Producto: {product['name']}, Marca: {product['brand']}, Precio: {product['price']}")
 
-        # Preguntar si desea guardar en un archivo TXT
         guardar_txt = input("¿Desea guardar estos productos en un archivo TXT? (Sí/No): ").lower()
         if guardar_txt == "si":
             filename_txt = input("Ingrese el nombre del archivo TXT: ")
             guardar_en_txt_por_categoria(productos_categoria, filename_txt, categoria)
             print(f"Datos guardados en '{filename_txt}'.")
 
-            # Preguntar si desea graficar los datos guardados
             graficar_guardados = input("¿Desea graficar los datos guardados? (Sí/No): ").lower()
             if graficar_guardados == "si":
                 graficar_datos_txt(filename_txt)
@@ -160,33 +153,22 @@ def graficar_tendencia(precios):
   if precios:
     x = np.arange(1, len (precios) + 1)
     y = np.array(precios)
-
-    #ajuste polinomico 
     coeficientes = np.polyfit(x, y, 1)
     polinomio = np.poly1d(coeficientes)
     tendencia = polinomio(x)
-
-    #graficar puntos de datos
     plt.scatter(x, y, label = "Datos")
-
-    #graficar tendencia
     plt.plot(x, tendencia, color = "red", label = "Tendencia")
-
-    #etiquetas y titulos
     plt.xlabel("Producto")
     plt.ylabel("Precio")
     plt.title("Tendencia de precios de productos de maquillaje")
     plt.legend()
-
-    #mostrar grafico  
     plt.show()
   else:
     print("Primero obten precios antes de intentar graficar")
-
     
 def mostrar_menu_principal(data):
     opcion = None
-    precios = []  # Define precios aquí para que sea accesible en todo el bucle.
+    precios = []
     while opcion != "0":
         print("¡Bienvenido a la búsqueda de productos de maquillaje!")
         print("1 - Obtener datos")
@@ -324,7 +306,7 @@ def mostrar_menu_principal(data):
 
                 elif opcionIV == "3":
                     name_lower, price_lower = aritmetics.obtener_producto_mas_barato(datos_maquillaje)
-                    print("Producto más caro:")
+                    print("Producto más barato:")
                     print("Nombre:", name_lower)
                     print("Precio:", price_lower)
                     print("-------------------------")
@@ -353,6 +335,5 @@ def mostrar_menu_principal(data):
         else:
             print("Opción inválida. Por favor, intente nuevamente.")
 
-# Realiza la solicitud API una vez para evitar solicitudes redundantes.
 datos_maquillaje = hacer_solicitud_api()
 mostrar_menu_principal(datos_maquillaje)
